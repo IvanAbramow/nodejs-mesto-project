@@ -12,11 +12,12 @@
     "dev": "ts-node-dev src/app.ts"
   },
   "dependencies": {
-    "@types/express": "5.0.0",
+    "celebrate": "^15.0.3",
     "express": "5.0.0",
     "mongoose": "8.7.0"
   },
   "devDependencies": {
+    "@types/express": "5.0.0",
     "@typescript-eslint/eslint-plugin": "8.8.0",
     "@typescript-eslint/parser": "8.8.0",
     "eslint": "8.57.1",

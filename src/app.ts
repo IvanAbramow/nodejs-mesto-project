@@ -1,8 +1,9 @@
 import express, { NextFunction, Request, Response } from 'express';
 import mongoose from 'mongoose';
-import usersRouter from '../routes/users';
-import cardsRouter from '../routes/cards';
+import usersRouter from './routes/users';
+import cardsRouter from './routes/cards';
 import { TAuthContext } from './types';
+import errorHandler from './middleware/errorHandler';
 
 const { PORT = 3000 } = process.env;
 const app = express();
@@ -21,6 +22,8 @@ app.use(express.json());
 
 app.use(usersRouter);
 app.use(cardsRouter);
+
+app.use(errorHandler);
 
 app.listen(PORT, () => {
   console.log('App is running on port', PORT);

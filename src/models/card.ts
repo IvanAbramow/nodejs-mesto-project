@@ -1,6 +1,6 @@
 import mongoose from 'mongoose';
 
-export type TCard = {
+type TCard = {
   name: string,
   link: string,
   owner: mongoose.Schema.Types.ObjectId,

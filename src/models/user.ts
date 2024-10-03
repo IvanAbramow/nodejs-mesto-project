@@ -1,6 +1,6 @@
 import mongoose from 'mongoose';
 
-export type TUser = {
+type TUser = {
   name: string,
   about: string,
   avatar: string,
