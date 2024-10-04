@@ -17,7 +17,7 @@ const errorHandler = (err: any, req: Request, res: Response, next: NextFunction)
   } else if (err instanceof CustomError) {
     res.status(err.statusCode).send({ message: err.message });
   } else {
-    res.status(500).send({ message: 'Server error' });
+    res.status(500).send({ message: 'Ошибка сервера' });
   }
 
   next();

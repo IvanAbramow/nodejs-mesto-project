@@ -8,7 +8,7 @@ import errorHandler from './middleware/errorHandler';
 const { PORT = 3000 } = process.env;
 const app = express();
 
-mongoose.connect('mongodb://localhost:27017/mestodb').then().catch((err) => console.log(err));
+mongoose.connect('mongodb://localhost:27017/mestodb');
 
 app.use((req: Request, res: Response<unknown, TAuthContext>, next: NextFunction) => {
   res.locals = {

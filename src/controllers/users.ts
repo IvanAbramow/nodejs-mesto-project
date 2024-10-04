@@ -2,11 +2,12 @@ import { NextFunction, Request, Response } from 'express';
 import User from '../models/user';
 import { TAuthContext } from '../types';
 import CustomError from '../errors/customError';
+import ERROR_MESSAGES from '../errors/errorMessages';
 
 export const getUsers = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const users = await User.find({});
-    res.status(200).json(users);
+    res.json(users);
   } catch (error) {
     next(error);
   }
@@ -17,9 +18,9 @@ export const getUserById = async (req: Request, res: Response, next: NextFunctio
 
   try {
     await User.findById(id).then((user) => {
-      res.status(200).json(user);
+      res.json(user);
     }).catch(() => {
-      throw new CustomError(404, 'Пользователь по указанному id не найден.');
+      throw new CustomError(404, ERROR_MESSAGES.USER_NOT_FOUND);
     });
   } catch (error) {
     next(error);
@@ -33,7 +34,7 @@ export const createUser = async (req: Request, res: Response, next: NextFunction
     await User.create({ name, about, avatar }).then((newUser) => {
       res.status(201).json(newUser);
     }).catch(() => {
-      throw new CustomError(400, 'Переданы некорректные данные при создании пользователя');
+      throw new CustomError(400, ERROR_MESSAGES.USER_INCORRECT_DATA);
     });
   } catch (error) {
     next(error);
@@ -53,13 +54,13 @@ export const updateUserInfo = async (
       { name, about, avatar },
       { new: true, runValidators: true },
     ).then((updatedUser) => {
-      res.status(200).json(updatedUser);
+      res.json(updatedUser);
     }).catch(() => {
-      throw new CustomError(404, 'Пользователь по указанному id не найден.');
+      throw new CustomError(404, ERROR_MESSAGES.USER_NOT_FOUND);
     });
   } catch (error: unknown) {
     if (error instanceof Error && error.name === 'ValidationError') {
-      next(new CustomError(400, 'Переданы некорректные данные при обновлении профиля'));
+      next(new CustomError(400, ERROR_MESSAGES.AVATAR_INCORRECT_DATA));
     } else {
       next(error);
     }
@@ -79,13 +80,13 @@ export const updateUserAvatar = async (
       { avatar },
       { new: true },
     ).then((updatedUser) => {
-      res.status(200).json(updatedUser);
+      res.json(updatedUser);
     }).catch(() => {
-      throw new CustomError(404, 'Пользователь по указанному id не найден.');
+      throw new CustomError(404, ERROR_MESSAGES.USER_NOT_FOUND);
     });
   } catch (error) {
     if (error instanceof Error && error.name === 'ValidationError') {
-      next(new CustomError(400, 'Переданы некорректные данные при обновлении аватара'));
+      next(new CustomError(400, ERROR_MESSAGES.AVATAR_INCORRECT_DATA));
     } else {
       next(error);
     }

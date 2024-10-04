@@ -1,7 +1,8 @@
 import { NextFunction, Request, Response } from 'express';
 import Card from '../models/card';
-import { ErrorMessages, TAuthContext } from '../types';
+import { TAuthContext } from '../types';
 import CustomError from '../errors/customError';
+import ERROR_MESSAGES from '../errors/errorMessages';
 
 export const getCards = async (
   req: Request,
@@ -28,7 +29,7 @@ export const addCard = async (
       .then((card) => {
         res.status(201).json(card);
       }).catch(() => {
-        throw new CustomError(400, ErrorMessages.BadRequest);
+        throw new CustomError(400, ERROR_MESSAGES.CARD_INCORRECT_DATA);
       });
   } catch (error) {
     next(error);
@@ -42,12 +43,12 @@ export const deleteCard = async (req: Request, res: Response, next: NextFunction
     await Card.findByIdAndDelete(id)
       .then((card) => {
         if (card === null) {
-          throw new CustomError(404, 'Карточка с указанным id не найдена');
+          throw new CustomError(404, ERROR_MESSAGES.CARD_NOT_FOUND);
         } else {
           res.send({ message: 'Карточка удалена' });
         }
       }).catch(() => {
-        throw new CustomError(404, 'Карточка с указанным id не найдена');
+        throw new CustomError(404, ERROR_MESSAGES.CARD_NOT_FOUND);
       });
   } catch (error) {
     next(error);
@@ -68,16 +69,16 @@ export const likeCard = async (
       { new: true },
     ).then((card) => {
       if (card === null) {
-        throw new CustomError(404, 'Передан несуществующий id карточки');
+        throw new CustomError(404, ERROR_MESSAGES.CARD_NOT_FOUND);
       } else {
         res.json(card);
       }
     }).catch(() => {
-      throw new CustomError(404, 'Передан несуществующий id карточки');
+      throw new CustomError(404, ERROR_MESSAGES.CARD_NOT_FOUND);
     });
   } catch (error) {
     if (error instanceof Error && error.name === 'ValidationError') {
-      next(new CustomError(400, 'Переданы некорректные данные для постановки лайка'));
+      next(new CustomError(400, ERROR_MESSAGES.LIKE_CARD_INCORRECT_DATA));
     } else {
       next(error);
     }
@@ -99,11 +100,11 @@ export const dislikeCard = async (
     ).then((card) => {
       res.json(card);
     }).catch(() => {
-      throw new CustomError(404, 'Передан несуществующий id карточки');
+      throw new CustomError(404, ERROR_MESSAGES.CARD_NOT_FOUND);
     });
   } catch (error) {
     if (error instanceof Error && error.name === 'ValidationError') {
-      next(new CustomError(400, 'Переданы некорректные данные для снятия лайка'));
+      next(new CustomError(400, ERROR_MESSAGES.DISLIKE_CARD_INCORRECT_DATA));
     } else {
       next(error);
     }

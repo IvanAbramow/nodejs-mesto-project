@@ -1,5 +1,5 @@
 {
-  "name": "nodejs-mesto-backend",
+  "name": "nodejs-mesto-project",
   "author": "Ivan Abramov",
   "version": "1.0.0",
   "description": "Yandex Practicum first sprint project part 1",
@@ -8,11 +8,10 @@
     "start": "ts-node src/app.ts",
     "build": "tsc",
     "lint": "npx eslint src/**/*.ts",
-    "eslint:fix": "npx eslint src/**/*.ts --fix",
     "dev": "ts-node-dev src/app.ts"
   },
   "dependencies": {
-    "celebrate": "^15.0.3",
+    "celebrate": "15.0.3",
     "express": "5.0.0",
     "mongoose": "8.7.0"
   },
