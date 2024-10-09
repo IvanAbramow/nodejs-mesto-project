@@ -10,9 +10,9 @@ import ERROR_MESSAGES from '../errors/errorMessages';
 export const getUsers = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const users = await User.find({});
-    res.json(users);
+    return res.json(users);
   } catch (error) {
-    next(error);
+    return next(error);
   }
 };
 
@@ -20,13 +20,15 @@ export const getUserById = async (req: Request, res: Response, next: NextFunctio
   const { id } = req.params;
 
   try {
-    await User.findById(id).then((user) => {
-      res.json(user);
-    }).catch(() => {
-      next(new CustomError(404, ERROR_MESSAGES.USER_NOT_FOUND));
-    });
+    const user = await User.findById(id);
+
+    if (!user) {
+      return next(new CustomError(404, ERROR_MESSAGES.USER_NOT_FOUND));
+    }
+
+    return res.json(user);
   } catch (error) {
-    next(error);
+    return next(error);
   }
 };
 
@@ -36,17 +38,18 @@ export const createUser = async (req: Request, res: Response, next: NextFunction
   } = req.body;
 
   try {
-    const hash = await bcrypt.hash(password, 10);
+    const passwordHash = await bcrypt.hash(password, 10);
     const newUser = await User.create({
-      name, about, avatar, email, password: hash,
+      name, about, avatar, email, password: passwordHash,
     });
-    res.status(201).json(newUser);
+
+    return res.status(201).json(newUser);
   } catch (err: any) {
     if (err.code === 11000) {
-      next(new CustomError(409, ERROR_MESSAGES.USER_EMAIL_ALREADY_EXISTS));
-    } else {
-      next(new CustomError(400, ERROR_MESSAGES.USER_INCORRECT_DATA));
+      return next(new CustomError(409, ERROR_MESSAGES.USER_EMAIL_ALREADY_EXISTS));
     }
+
+    return next(new CustomError(400, ERROR_MESSAGES.USER_INCORRECT_DATA));
   }
 };
 
@@ -61,12 +64,12 @@ export const userInfo = async (
 
     const user = await User.findById(userId);
     if (!user) {
-      next(new CustomError(404, ERROR_MESSAGES.USER_NOT_FOUND));
+      return next(new CustomError(404, ERROR_MESSAGES.USER_NOT_FOUND));
     }
 
-    res.json(user);
+    return res.json(user);
   } catch (error) {
-    next(error);
+    return next(error);
   }
 };
 
@@ -81,21 +84,23 @@ export const updateUserInfo = async (
     const userParams = req.user as JwtPayload;
     const userId = userParams?._id;
 
-    await User.findByIdAndUpdate(
+    const updatedUser = await User.findByIdAndUpdate(
       userId,
       { name, about, avatar },
       { new: true, runValidators: true },
-    ).then((updatedUser) => {
-      res.json(updatedUser);
-    }).catch(() => {
-      next(new CustomError(404, ERROR_MESSAGES.USER_NOT_FOUND));
-    });
+    );
+
+    if (!updatedUser) {
+      return next(new CustomError(404, ERROR_MESSAGES.USER_NOT_FOUND));
+    }
+
+    return res.json(updatedUser);
   } catch (error: unknown) {
     if (error instanceof Error && error.name === 'ValidationError') {
-      next(new CustomError(400, ERROR_MESSAGES.AVATAR_INCORRECT_DATA));
-    } else {
-      next(error);
+      return next(new CustomError(400, ERROR_MESSAGES.AVATAR_INCORRECT_DATA));
     }
+
+    return next(error);
   }
 };
 
@@ -110,21 +115,23 @@ export const updateUserAvatar = async (
     const userParams = req.user as JwtPayload;
     const userId = userParams?._id;
 
-    await User.findByIdAndUpdate(
+    const updatedUser = await User.findByIdAndUpdate(
       userId,
       { avatar },
       { new: true },
-    ).then((updatedUser) => {
-      res.json(updatedUser);
-    }).catch(() => {
-      next(new CustomError(404, ERROR_MESSAGES.USER_NOT_FOUND));
-    });
+    );
+
+    if (!updatedUser) {
+      return next(new CustomError(404, ERROR_MESSAGES.USER_NOT_FOUND));
+    }
+
+    return res.json(updatedUser);
   } catch (error) {
     if (error instanceof Error && error.name === 'ValidationError') {
-      next(new CustomError(400, ERROR_MESSAGES.AVATAR_INCORRECT_DATA));
-    } else {
-      next(error);
+      return next(new CustomError(400, ERROR_MESSAGES.AVATAR_INCORRECT_DATA));
     }
+
+    return next(error);
   }
 };
 
@@ -135,19 +142,16 @@ export const login = async (req: Request, res: Response, next: NextFunction) => 
     const user = await User.findUserByCredentials(email, password);
     const token = jwt.sign({ _id: user._id }, 'super-strong-secret', { expiresIn: '7d' });
 
-    res.cookie('authorization', token, {
+    return res.cookie('authorization', token, {
       maxAge: 604800000,
       httpOnly: true,
       sameSite: true,
-    });
-
-    res.send({ message: 'Успешная авторизация' });
+    }).send({ message: 'Успешная авторизация' });
   } catch (error) {
     if (error instanceof Error && error.name === 'ValidationError') {
-      next(new CustomError(400, ERROR_MESSAGES.AVATAR_INCORRECT_DATA));
-    } else {
-      next(new CustomError(401, ERROR_MESSAGES.AUTHORIZATION_REQUIRED));
+      return next(new CustomError(400, ERROR_MESSAGES.AVATAR_INCORRECT_DATA));
     }
-    next();
+
+    return next(new CustomError(401, ERROR_MESSAGES.AUTHORIZATION_REQUIRED));
   }
 };

@@ -15,9 +15,9 @@ export const getCards = async (
     const userId = userParams?._id;
 
     const cards = await Card.find({ owner: userId });
-    res.json(cards);
+    return res.json(cards);
   } catch (error) {
-    next(error);
+    return next(error);
   }
 };
 
@@ -26,20 +26,28 @@ export const addCard = async (
   res: Response,
   next: NextFunction,
 ) => {
-  const { name, link } = req.body;
+  const {
+    name,
+    link,
+  } = req.body;
 
   try {
     const userParams = req.user as JwtPayload;
     const userId = userParams?._id;
 
-    await Card.create({ name, link, owner: userId })
-      .then((card) => {
-        res.status(201).json(card);
-      }).catch(() => {
-        next(new CustomError(400, ERROR_MESSAGES.CARD_INCORRECT_DATA));
-      });
+    const card = await Card.create({
+      name,
+      link,
+      owner: userId,
+    });
+
+    if (!card) {
+      return next(new CustomError(400, ERROR_MESSAGES.CARD_INCORRECT_DATA));
+    }
+
+    return res.status(201).json(card);
   } catch (error) {
-    next(error);
+    return next(error);
   }
 };
 
@@ -52,17 +60,22 @@ export const deleteCard = async (req: TAuthenticatedRequest, res: Response, next
 
     const card = await Card.findById(id);
     if (!card) {
-      next(new CustomError(404, ERROR_MESSAGES.CARD_NOT_FOUND));
+      return next(new CustomError(404, ERROR_MESSAGES.CARD_NOT_FOUND));
     }
 
     if (card && card.owner.toString() !== userId) {
-      next(new CustomError(403, ERROR_MESSAGES.USER_NOT_PERMITTED_TO_DELETE_CARD));
+      return next(new CustomError(403, ERROR_MESSAGES.USER_NOT_PERMITTED_TO_DELETE_CARD));
     }
 
-    await Card.findByIdAndDelete(id);
-    res.send({ message: 'Карточка удалена' });
+    const deletedCard = await Card.findByIdAndDelete(id);
+
+    if (!deletedCard) {
+      return next(new CustomError(404, ERROR_MESSAGES.CARD_NOT_FOUND));
+    }
+
+    return res.send({ message: 'Карточка удалена' });
   } catch (error) {
-    next(error);
+    return next(error);
   }
 };
 
@@ -77,25 +90,23 @@ export const likeCard = async (
     const userParams = req.user as JwtPayload;
     const userId = userParams?._id;
 
-    await Card.findByIdAndUpdate(
+    const card = await Card.findByIdAndUpdate(
       id,
       { $addToSet: { likes: userId } },
       { new: true },
-    ).then((card) => {
-      if (card === null) {
-        next(new CustomError(404, ERROR_MESSAGES.CARD_NOT_FOUND));
-      } else {
-        res.json(card);
-      }
-    }).catch(() => {
-      next(new CustomError(404, ERROR_MESSAGES.CARD_NOT_FOUND));
-    });
+    );
+
+    if (!card) {
+      return next(new CustomError(404, ERROR_MESSAGES.CARD_NOT_FOUND));
+    }
+
+    return res.json(card);
   } catch (error) {
     if (error instanceof Error && error.name === 'ValidationError') {
-      next(new CustomError(400, ERROR_MESSAGES.LIKE_CARD_INCORRECT_DATA));
-    } else {
-      next(error);
+      return next(new CustomError(400, ERROR_MESSAGES.LIKE_CARD_INCORRECT_DATA));
     }
+
+    return next(error);
   }
 };
 
@@ -110,20 +121,22 @@ export const dislikeCard = async (
     const userParams = req.user as JwtPayload;
     const userId = userParams?._id;
 
-    await Card.findByIdAndUpdate(
+    const card = await Card.findByIdAndUpdate(
       id,
       { $pull: { likes: userId } },
       { new: true },
-    ).then((card) => {
-      res.json(card);
-    }).catch(() => {
-      next(new CustomError(404, ERROR_MESSAGES.CARD_NOT_FOUND));
-    });
+    );
+
+    if (!card) {
+      return next(new CustomError(404, ERROR_MESSAGES.CARD_NOT_FOUND));
+    }
+
+    return res.json(card);
   } catch (error) {
     if (error instanceof Error && error.name === 'ValidationError') {
-      next(new CustomError(400, ERROR_MESSAGES.DISLIKE_CARD_INCORRECT_DATA));
-    } else {
-      next(error);
+      return next(new CustomError(400, ERROR_MESSAGES.DISLIKE_CARD_INCORRECT_DATA));
     }
+
+    return next(error);
   }
 };
