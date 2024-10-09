@@ -9,7 +9,7 @@ const ERROR_MESSAGES = {
   USER_NOT_PERMITTED_TO_DELETE_CARD: 'У вас нет прав на удаление этой карточки',
   USER_EMAIL_ALREADY_EXISTS: 'Пользователь с таким email уже существует',
   AUTHORIZATION_REQUIRED: 'Необходима авторизация',
-  INCORRECT_AUTHORIZATION_DATA: 'Передан неверный логин или пароль',
+  INCORRECT_AUTHORIZATION_DATA: 'Передан неверная почта или пароль',
   INTERNAL_SERVER_ERROR: 'Ошибка сервера',
 };
 

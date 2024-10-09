@@ -6,6 +6,7 @@ import User from '../models/user';
 import { TAuthenticatedRequest } from '../types';
 import CustomError from '../errors/customError';
 import ERROR_MESSAGES from '../errors/errorMessages';
+import SECRET_KEY from '../constants';
 
 export const getUsers = async (req: Request, res: Response, next: NextFunction) => {
   try {
@@ -24,9 +25,9 @@ export const getUserById = async (req: Request, res: Response, next: NextFunctio
 
     if (!user) {
       next(new CustomError(404, ERROR_MESSAGES.USER_NOT_FOUND));
+    } else {
+      res.json(user);
     }
-
-    res.json(user);
   } catch (error) {
     next(error);
   }
@@ -65,9 +66,9 @@ export const userInfo = async (
     const user = await User.findById(userId);
     if (!user) {
       next(new CustomError(404, ERROR_MESSAGES.USER_NOT_FOUND));
+    } else {
+      res.json(user);
     }
-
-    res.json(user);
   } catch (error) {
     next(error);
   }
@@ -92,15 +93,15 @@ export const updateUserInfo = async (
 
     if (!updatedUser) {
       next(new CustomError(404, ERROR_MESSAGES.USER_NOT_FOUND));
+    } else {
+      res.json(updatedUser);
     }
-
-    res.json(updatedUser);
   } catch (error: unknown) {
     if (error instanceof Error && error.name === 'ValidationError') {
       next(new CustomError(400, ERROR_MESSAGES.AVATAR_INCORRECT_DATA));
+    } else {
+      next(error);
     }
-
-    next(error);
   }
 };
 
@@ -123,15 +124,15 @@ export const updateUserAvatar = async (
 
     if (!updatedUser) {
       next(new CustomError(404, ERROR_MESSAGES.USER_NOT_FOUND));
+    } else {
+      res.json(updatedUser);
     }
-
-    res.json(updatedUser);
   } catch (error) {
     if (error instanceof Error && error.name === 'ValidationError') {
       next(new CustomError(400, ERROR_MESSAGES.AVATAR_INCORRECT_DATA));
+    } else {
+      next(error);
     }
-
-    next(error);
   }
 };
 
@@ -140,7 +141,7 @@ export const login = async (req: Request, res: Response, next: NextFunction) => 
 
   try {
     const user = await User.findUserByCredentials(email, password);
-    const token = jwt.sign({ _id: user._id }, 'super-strong-secret', { expiresIn: '7d' });
+    const token = jwt.sign({ _id: user._id }, SECRET_KEY, { expiresIn: '7d' });
 
     res.cookie('authorization', token, {
       maxAge: 604800000,
