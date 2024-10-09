@@ -1,6 +1,7 @@
 import { isCelebrateError } from 'celebrate';
 import { NextFunction, Request, Response } from 'express';
 import CustomError from '../errors/customError';
+import ERROR_MESSAGES from '../errors/errorMessages';
 
 const errorHandler = (err: any, req: Request, res: Response, next: NextFunction) => {
   if (isCelebrateError(err)) {
@@ -17,7 +18,7 @@ const errorHandler = (err: any, req: Request, res: Response, next: NextFunction)
   } else if (err instanceof CustomError) {
     res.status(err.statusCode).send({ message: err.message });
   } else {
-    res.status(500).send({ message: 'Ошибка сервера' });
+    res.status(500).send({ message: ERROR_MESSAGES.INTERNAL_SERVER_ERROR });
   }
 
   next(err);

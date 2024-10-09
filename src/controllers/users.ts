@@ -23,7 +23,7 @@ export const getUserById = async (req: Request, res: Response, next: NextFunctio
     await User.findById(id).then((user) => {
       res.json(user);
     }).catch(() => {
-      throw new CustomError(404, ERROR_MESSAGES.USER_NOT_FOUND);
+      next(new CustomError(404, ERROR_MESSAGES.USER_NOT_FOUND));
     });
   } catch (error) {
     next(error);
@@ -43,7 +43,7 @@ export const createUser = async (req: Request, res: Response, next: NextFunction
     res.status(201).json(newUser);
   } catch (err: any) {
     if (err.code === 11000) {
-      next(new CustomError(409, `Пользователь с email ${email} уже существует`));
+      next(new CustomError(409, ERROR_MESSAGES.USER_EMAIL_ALREADY_EXISTS));
     } else {
       next(new CustomError(400, ERROR_MESSAGES.USER_INCORRECT_DATA));
     }
@@ -61,7 +61,7 @@ export const userInfo = async (
 
     const user = await User.findById(userId);
     if (!user) {
-      throw new CustomError(404, ERROR_MESSAGES.USER_NOT_FOUND);
+      next(new CustomError(404, ERROR_MESSAGES.USER_NOT_FOUND));
     }
 
     res.json(user);
@@ -88,7 +88,7 @@ export const updateUserInfo = async (
     ).then((updatedUser) => {
       res.json(updatedUser);
     }).catch(() => {
-      throw new CustomError(404, ERROR_MESSAGES.USER_NOT_FOUND);
+      next(new CustomError(404, ERROR_MESSAGES.USER_NOT_FOUND));
     });
   } catch (error: unknown) {
     if (error instanceof Error && error.name === 'ValidationError') {
@@ -117,7 +117,7 @@ export const updateUserAvatar = async (
     ).then((updatedUser) => {
       res.json(updatedUser);
     }).catch(() => {
-      throw new CustomError(404, ERROR_MESSAGES.USER_NOT_FOUND);
+      next(new CustomError(404, ERROR_MESSAGES.USER_NOT_FOUND));
     });
   } catch (error) {
     if (error instanceof Error && error.name === 'ValidationError') {
@@ -146,7 +146,7 @@ export const login = async (req: Request, res: Response, next: NextFunction) => 
     if (error instanceof Error && error.name === 'ValidationError') {
       next(new CustomError(400, ERROR_MESSAGES.AVATAR_INCORRECT_DATA));
     } else {
-      next(new CustomError(401, 'Ошибка авторизации'));
+      next(new CustomError(401, ERROR_MESSAGES.AUTHORIZATION_REQUIRED));
     }
     next();
   }

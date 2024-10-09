@@ -1,4 +1,4 @@
-import { NextFunction, Request, Response } from 'express';
+import { NextFunction, Response } from 'express';
 import { JwtPayload } from 'jsonwebtoken';
 import Card from '../models/card';
 import { TAuthenticatedRequest } from '../types';
@@ -36,27 +36,31 @@ export const addCard = async (
       .then((card) => {
         res.status(201).json(card);
       }).catch(() => {
-        throw new CustomError(400, ERROR_MESSAGES.CARD_INCORRECT_DATA);
+        next(new CustomError(400, ERROR_MESSAGES.CARD_INCORRECT_DATA));
       });
   } catch (error) {
     next(error);
   }
 };
 
-export const deleteCard = async (req: Request, res: Response, next: NextFunction) => {
+export const deleteCard = async (req: TAuthenticatedRequest, res: Response, next: NextFunction) => {
   const { id } = req.params;
 
   try {
-    await Card.findByIdAndDelete(id)
-      .then((card) => {
-        if (card === null) {
-          throw new CustomError(404, ERROR_MESSAGES.CARD_NOT_FOUND);
-        } else {
-          res.send({ message: 'Карточка удалена' });
-        }
-      }).catch(() => {
-        throw new CustomError(404, ERROR_MESSAGES.CARD_NOT_FOUND);
-      });
+    const userParams = req.user as JwtPayload;
+    const userId = userParams?._id;
+
+    const card = await Card.findById(id);
+    if (!card) {
+      next(new CustomError(404, ERROR_MESSAGES.CARD_NOT_FOUND));
+    }
+
+    if (card && card.owner.toString() !== userId) {
+      next(new CustomError(403, ERROR_MESSAGES.USER_NOT_PERMITTED_TO_DELETE_CARD));
+    }
+
+    await Card.findByIdAndDelete(id);
+    res.send({ message: 'Карточка удалена' });
   } catch (error) {
     next(error);
   }
@@ -79,12 +83,12 @@ export const likeCard = async (
       { new: true },
     ).then((card) => {
       if (card === null) {
-        throw new CustomError(404, ERROR_MESSAGES.CARD_NOT_FOUND);
+        next(new CustomError(404, ERROR_MESSAGES.CARD_NOT_FOUND));
       } else {
         res.json(card);
       }
     }).catch(() => {
-      throw new CustomError(404, ERROR_MESSAGES.CARD_NOT_FOUND);
+      next(new CustomError(404, ERROR_MESSAGES.CARD_NOT_FOUND));
     });
   } catch (error) {
     if (error instanceof Error && error.name === 'ValidationError') {
@@ -113,7 +117,7 @@ export const dislikeCard = async (
     ).then((card) => {
       res.json(card);
     }).catch(() => {
-      throw new CustomError(404, ERROR_MESSAGES.CARD_NOT_FOUND);
+      next(new CustomError(404, ERROR_MESSAGES.CARD_NOT_FOUND));
     });
   } catch (error) {
     if (error instanceof Error && error.name === 'ValidationError') {

@@ -7,6 +7,8 @@ import ERROR_MESSAGES from '../errors/errorMessages';
 
 const router = Router();
 
+const urlPattern = /^(https?:\/\/)(www\.)?[\w\-._~:/?#[\]@!$&'()*+,;=]+\.[a-z]{2,}(\/[\w\-._~:/?#[\]@!$&'()*+,;=]*)*\/?#?$/i;
+
 router.get('/users', getUsers);
 router.get('/users/me', userInfo);
 router.get('/users/:id', celebrate({
@@ -51,11 +53,11 @@ router.patch('/users/me/avatar', celebrate({
   body: Joi.object().keys({
     avatar: Joi.string()
       .required()
-      .uri()
+      .pattern(urlPattern)
       .messages({
         'string.base': `${ERROR_MESSAGES.USER_INCORRECT_DATA}: поле avatar должно быть строкой`,
         'string.empty': `${ERROR_MESSAGES.USER_INCORRECT_DATA}: поле avatar не должно быть пустым`,
-        'string.uri': `${ERROR_MESSAGES.USER_INCORRECT_DATA}: поле avatar должно быть в формате url`,
+        'string.pattern.base': `${ERROR_MESSAGES.USER_INCORRECT_DATA}: поле avatar должно быть в формате url`,
         'any.required': `${ERROR_MESSAGES.USER_INCORRECT_DATA}: пропущено обязательное поле avatar`,
       }),
   }),
