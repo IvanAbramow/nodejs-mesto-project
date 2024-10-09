@@ -10,9 +10,9 @@ import ERROR_MESSAGES from '../errors/errorMessages';
 export const getUsers = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const users = await User.find({});
-    return res.json(users);
+    res.json(users);
   } catch (error) {
-    return next(error);
+    next(error);
   }
 };
 
@@ -23,12 +23,12 @@ export const getUserById = async (req: Request, res: Response, next: NextFunctio
     const user = await User.findById(id);
 
     if (!user) {
-      return next(new CustomError(404, ERROR_MESSAGES.USER_NOT_FOUND));
+      next(new CustomError(404, ERROR_MESSAGES.USER_NOT_FOUND));
     }
 
-    return res.json(user);
+    res.json(user);
   } catch (error) {
-    return next(error);
+    next(error);
   }
 };
 
@@ -43,13 +43,13 @@ export const createUser = async (req: Request, res: Response, next: NextFunction
       name, about, avatar, email, password: passwordHash,
     });
 
-    return res.status(201).json(newUser);
+    res.status(201).json(newUser);
   } catch (err: any) {
     if (err.code === 11000) {
-      return next(new CustomError(409, ERROR_MESSAGES.USER_EMAIL_ALREADY_EXISTS));
+      next(new CustomError(409, ERROR_MESSAGES.USER_EMAIL_ALREADY_EXISTS));
+    } else {
+      next(new CustomError(400, ERROR_MESSAGES.USER_INCORRECT_DATA));
     }
-
-    return next(new CustomError(400, ERROR_MESSAGES.USER_INCORRECT_DATA));
   }
 };
 
@@ -64,12 +64,12 @@ export const userInfo = async (
 
     const user = await User.findById(userId);
     if (!user) {
-      return next(new CustomError(404, ERROR_MESSAGES.USER_NOT_FOUND));
+      next(new CustomError(404, ERROR_MESSAGES.USER_NOT_FOUND));
     }
 
-    return res.json(user);
+    res.json(user);
   } catch (error) {
-    return next(error);
+    next(error);
   }
 };
 
@@ -91,16 +91,16 @@ export const updateUserInfo = async (
     );
 
     if (!updatedUser) {
-      return next(new CustomError(404, ERROR_MESSAGES.USER_NOT_FOUND));
+      next(new CustomError(404, ERROR_MESSAGES.USER_NOT_FOUND));
     }
 
-    return res.json(updatedUser);
+    res.json(updatedUser);
   } catch (error: unknown) {
     if (error instanceof Error && error.name === 'ValidationError') {
-      return next(new CustomError(400, ERROR_MESSAGES.AVATAR_INCORRECT_DATA));
+      next(new CustomError(400, ERROR_MESSAGES.AVATAR_INCORRECT_DATA));
     }
 
-    return next(error);
+    next(error);
   }
 };
 
@@ -122,16 +122,16 @@ export const updateUserAvatar = async (
     );
 
     if (!updatedUser) {
-      return next(new CustomError(404, ERROR_MESSAGES.USER_NOT_FOUND));
+      next(new CustomError(404, ERROR_MESSAGES.USER_NOT_FOUND));
     }
 
-    return res.json(updatedUser);
+    res.json(updatedUser);
   } catch (error) {
     if (error instanceof Error && error.name === 'ValidationError') {
-      return next(new CustomError(400, ERROR_MESSAGES.AVATAR_INCORRECT_DATA));
+      next(new CustomError(400, ERROR_MESSAGES.AVATAR_INCORRECT_DATA));
     }
 
-    return next(error);
+    next(error);
   }
 };
 
@@ -142,16 +142,16 @@ export const login = async (req: Request, res: Response, next: NextFunction) => 
     const user = await User.findUserByCredentials(email, password);
     const token = jwt.sign({ _id: user._id }, 'super-strong-secret', { expiresIn: '7d' });
 
-    return res.cookie('authorization', token, {
+    res.cookie('authorization', token, {
       maxAge: 604800000,
       httpOnly: true,
       sameSite: true,
     }).send({ message: 'Успешная авторизация' });
   } catch (error) {
     if (error instanceof Error && error.name === 'ValidationError') {
-      return next(new CustomError(400, ERROR_MESSAGES.AVATAR_INCORRECT_DATA));
+      next(new CustomError(400, ERROR_MESSAGES.INCORRECT_AUTHORIZATION_DATA));
+    } else {
+      next(new CustomError(401, ERROR_MESSAGES.AUTHORIZATION_REQUIRED));
     }
-
-    return next(new CustomError(401, ERROR_MESSAGES.AUTHORIZATION_REQUIRED));
   }
 };

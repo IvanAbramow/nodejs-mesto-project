@@ -15,9 +15,9 @@ export const getCards = async (
     const userId = userParams?._id;
 
     const cards = await Card.find({ owner: userId });
-    return res.json(cards);
+    res.json(cards);
   } catch (error) {
-    return next(error);
+    next(error);
   }
 };
 
@@ -42,12 +42,12 @@ export const addCard = async (
     });
 
     if (!card) {
-      return next(new CustomError(400, ERROR_MESSAGES.CARD_INCORRECT_DATA));
+      next(new CustomError(400, ERROR_MESSAGES.CARD_INCORRECT_DATA));
     }
 
-    return res.status(201).json(card);
+    res.status(201).json(card);
   } catch (error) {
-    return next(error);
+    next(error);
   }
 };
 
@@ -60,22 +60,22 @@ export const deleteCard = async (req: TAuthenticatedRequest, res: Response, next
 
     const card = await Card.findById(id);
     if (!card) {
-      return next(new CustomError(404, ERROR_MESSAGES.CARD_NOT_FOUND));
+      next(new CustomError(404, ERROR_MESSAGES.CARD_NOT_FOUND));
     }
 
     if (card && card.owner.toString() !== userId) {
-      return next(new CustomError(403, ERROR_MESSAGES.USER_NOT_PERMITTED_TO_DELETE_CARD));
+      next(new CustomError(403, ERROR_MESSAGES.USER_NOT_PERMITTED_TO_DELETE_CARD));
     }
 
     const deletedCard = await Card.findByIdAndDelete(id);
 
     if (!deletedCard) {
-      return next(new CustomError(404, ERROR_MESSAGES.CARD_NOT_FOUND));
+      next(new CustomError(404, ERROR_MESSAGES.CARD_NOT_FOUND));
     }
 
-    return res.send({ message: 'Карточка удалена' });
+    res.send({ message: 'Карточка удалена' });
   } catch (error) {
-    return next(error);
+    next(error);
   }
 };
 
@@ -97,16 +97,16 @@ export const likeCard = async (
     );
 
     if (!card) {
-      return next(new CustomError(404, ERROR_MESSAGES.CARD_NOT_FOUND));
+      next(new CustomError(404, ERROR_MESSAGES.CARD_NOT_FOUND));
     }
 
-    return res.json(card);
+    res.json(card);
   } catch (error) {
     if (error instanceof Error && error.name === 'ValidationError') {
-      return next(new CustomError(400, ERROR_MESSAGES.LIKE_CARD_INCORRECT_DATA));
+      next(new CustomError(400, ERROR_MESSAGES.LIKE_CARD_INCORRECT_DATA));
     }
 
-    return next(error);
+    next(error);
   }
 };
 
@@ -128,15 +128,15 @@ export const dislikeCard = async (
     );
 
     if (!card) {
-      return next(new CustomError(404, ERROR_MESSAGES.CARD_NOT_FOUND));
+      next(new CustomError(404, ERROR_MESSAGES.CARD_NOT_FOUND));
     }
 
-    return res.json(card);
+    res.json(card);
   } catch (error) {
     if (error instanceof Error && error.name === 'ValidationError') {
-      return next(new CustomError(400, ERROR_MESSAGES.DISLIKE_CARD_INCORRECT_DATA));
+      next(new CustomError(400, ERROR_MESSAGES.DISLIKE_CARD_INCORRECT_DATA));
     }
 
-    return next(error);
+    next(error);
   }
 };
