@@ -1,9 +1,8 @@
-import express, { NextFunction, Request, Response } from 'express';
+import express from 'express';
 import mongoose from 'mongoose';
 import { celebrate, Joi } from 'celebrate';
 import usersRouter from './routes/users';
 import cardsRouter from './routes/cards';
-import { TAuthenticatedRequest } from './types';
 import errorHandler from './middlewares/errorHandler';
 import { createUser, login } from './controllers/users';
 import auth from './middlewares/auth';
@@ -94,7 +93,6 @@ app.post(
 );
 
 app.use(auth);
-
 app.use(usersRouter);
 app.use(cardsRouter);
 

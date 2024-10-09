@@ -1,16 +1,20 @@
 import { NextFunction, Request, Response } from 'express';
+import { JwtPayload } from 'jsonwebtoken';
 import Card from '../models/card';
-import { TAuthContext } from '../types';
+import { TAuthenticatedRequest } from '../types';
 import CustomError from '../errors/customError';
 import ERROR_MESSAGES from '../errors/errorMessages';
 
 export const getCards = async (
-  req: Request,
-  res: Response<unknown, TAuthContext>,
+  req: TAuthenticatedRequest,
+  res: Response,
   next: NextFunction,
 ) => {
   try {
-    const cards = await Card.find({ owner: res.locals.userId });
+    const userParams = req.user as JwtPayload;
+    const userId = userParams?._id;
+
+    const cards = await Card.find({ owner: userId });
     res.json(cards);
   } catch (error) {
     next(error);
@@ -18,14 +22,17 @@ export const getCards = async (
 };
 
 export const addCard = async (
-  req: Request,
-  res: Response<unknown, TAuthContext>,
+  req: TAuthenticatedRequest,
+  res: Response,
   next: NextFunction,
 ) => {
   const { name, link } = req.body;
 
   try {
-    await Card.create({ name, link, owner: res.locals.userId })
+    const userParams = req.user as JwtPayload;
+    const userId = userParams?._id;
+
+    await Card.create({ name, link, owner: userId })
       .then((card) => {
         res.status(201).json(card);
       }).catch(() => {
@@ -56,16 +63,19 @@ export const deleteCard = async (req: Request, res: Response, next: NextFunction
 };
 
 export const likeCard = async (
-  req: Request,
-  res: Response<unknown, TAuthContext>,
+  req: TAuthenticatedRequest,
+  res: Response,
   next: NextFunction,
 ) => {
   const { id } = req.params;
 
   try {
+    const userParams = req.user as JwtPayload;
+    const userId = userParams?._id;
+
     await Card.findByIdAndUpdate(
       id,
-      { $addToSet: { likes: res.locals.userId } },
+      { $addToSet: { likes: userId } },
       { new: true },
     ).then((card) => {
       if (card === null) {
@@ -86,16 +96,19 @@ export const likeCard = async (
 };
 
 export const dislikeCard = async (
-  req: Request,
-  res: Response<unknown, TAuthContext>,
+  req: TAuthenticatedRequest,
+  res: Response,
   next: NextFunction,
 ) => {
   const { id } = req.params;
 
   try {
+    const userParams = req.user as JwtPayload;
+    const userId = userParams?._id;
+
     await Card.findByIdAndUpdate(
       id,
-      { $pull: { likes: res.locals.userId } },
+      { $pull: { likes: userId } },
       { new: true },
     ).then((card) => {
       res.json(card);

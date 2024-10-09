@@ -1,7 +1,14 @@
 import mongoose, { Model, Document } from 'mongoose';
 import validator from 'validator';
 import bcrypt from 'bcryptjs';
-import { TUser } from '../types';
+
+type TUser = {
+  email: string;
+  password: string;
+  name?: string,
+  about?: string,
+  avatar?: string,
+};
 
 type TUserModel = Model<TUser> & {
   // eslint-disable-next-line no-unused-vars

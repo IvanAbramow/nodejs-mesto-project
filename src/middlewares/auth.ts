@@ -1,32 +1,22 @@
 import jwt from 'jsonwebtoken';
-import { Response, NextFunction, Request } from 'express';
-import { TAuthenticatedRequest, TUser } from '../types';
+import { NextFunction, Response } from 'express';
+import { TAuthenticatedRequest } from '../types';
 
-export default (req: Request, res: Response, next: NextFunction) => {
+export default (req: TAuthenticatedRequest, res: Response, next: NextFunction) => {
   const { authorization } = req.headers;
 
   if (!authorization || !authorization.startsWith('Bearer ')) {
-    console.log(authorization);
-
-    return res
-      .status(401)
-      .send({ message: 'Необходима авторизация' });
+    res.status(401).send({ message: 'Необходима авторизация' });
+    return;
   }
 
   const token = authorization.replace('Bearer ', '');
 
-  let payload;
-
   try {
-    payload = jwt.verify(token, 'some-secret-key');
+    req.user = jwt.verify(token, 'super-strong-secret');
+    next();
   } catch (err) {
-    console.log(err);
-    return res
-      .status(401)
-      .send({ message: 'Необходима авторизация' });
+    res.status(401).send({ message: 'Необходима авторизация' });
+    next(err);
   }
-
-  req.user = payload as TAuthenticatedRequest;
-
-  return next();
 };

@@ -1,9 +1,9 @@
 import { NextFunction, Request, Response } from 'express';
 import bcrypt from 'bcryptjs';
-import jwt from 'jsonwebtoken';
+import jwt, { JwtPayload } from 'jsonwebtoken';
 
 import User from '../models/user';
-import { TAuthContext, TAuthenticatedRequest } from '../types';
+import { TAuthenticatedRequest } from '../types';
 import CustomError from '../errors/customError';
 import ERROR_MESSAGES from '../errors/errorMessages';
 
@@ -50,42 +50,39 @@ export const createUser = async (req: Request, res: Response, next: NextFunction
   }
 };
 
-export const getUserInfo = async (
+export const userInfo = async (
   req: TAuthenticatedRequest,
-  res: Response<unknown, TAuthContext>,
+  res: Response,
   next: NextFunction,
 ) => {
   try {
-    const requestUser = req.user;
-    const userId = typeof requestUser === 'string' ? requestUser : requestUser?._id;
+    const userParams = req.user as JwtPayload;
+    const userId = userParams?._id;
 
-    console.log('userId', userId);
-
-    await User.findById(userId)
-      .then((user) => {
-        res.json(user);
-      }).catch(() => {
-        throw new CustomError(400, 'Not found');
-      });
-  } catch (error) {
-    if (error instanceof Error && error.name === 'ValidationError') {
-      next(new CustomError(400, ERROR_MESSAGES.AVATAR_INCORRECT_DATA));
-    } else {
-      next(error);
+    const user = await User.findById(userId);
+    if (!user) {
+      throw new CustomError(404, ERROR_MESSAGES.USER_NOT_FOUND);
     }
+
+    res.json(user);
+  } catch (error) {
+    next(error);
   }
 };
 
 export const updateUserInfo = async (
   req: TAuthenticatedRequest,
-  res: Response<unknown, TAuthContext>,
+  res: Response,
   next: NextFunction,
 ) => {
   const { name, about, avatar } = req.body;
 
   try {
+    const userParams = req.user as JwtPayload;
+    const userId = userParams?._id;
+
     await User.findByIdAndUpdate(
-      req.user,
+      userId,
       { name, about, avatar },
       { new: true, runValidators: true },
     ).then((updatedUser) => {
@@ -103,15 +100,18 @@ export const updateUserInfo = async (
 };
 
 export const updateUserAvatar = async (
-  req: Request,
-  res: Response<unknown, TAuthContext>,
+  req: TAuthenticatedRequest,
+  res: Response,
   next: NextFunction,
 ) => {
   const { avatar } = req.body;
 
   try {
+    const userParams = req.user as JwtPayload;
+    const userId = userParams?._id;
+
     await User.findByIdAndUpdate(
-      res.locals.userId,
+      userId,
       { avatar },
       { new: true },
     ).then((updatedUser) => {
@@ -148,5 +148,6 @@ export const login = async (req: Request, res: Response, next: NextFunction) => 
     } else {
       next(new CustomError(401, 'Ошибка авторизации'));
     }
+    next();
   }
 };

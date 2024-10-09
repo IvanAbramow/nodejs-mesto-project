@@ -1,13 +1,14 @@
 import { Router } from 'express';
 import { celebrate, Joi } from 'celebrate';
 import {
-  getUserById, getUserInfo, getUsers, updateUserAvatar, updateUserInfo,
+  getUserById, getUsers, updateUserAvatar, updateUserInfo, userInfo,
 } from '../controllers/users';
 import ERROR_MESSAGES from '../errors/errorMessages';
 
 const router = Router();
 
 router.get('/users', getUsers);
+router.get('/users/me', userInfo);
 router.get('/users/:id', celebrate({
   params: Joi.object({
     id: Joi.string()
@@ -20,7 +21,6 @@ router.get('/users/:id', celebrate({
       }),
   }),
 }), getUserById);
-router.get('/users/me', getUserInfo);
 router.patch('/users/me', celebrate({
   body: Joi.object().keys({
     name: Joi.string()
