@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { celebrate, Joi } from 'celebrate';
 import {
-  createUser, getUserById, getUsers, updateUserAvatar, updateUserInfo,
+  getUserById, getUserInfo, getUsers, updateUserAvatar, updateUserInfo,
 } from '../controllers/users';
 import ERROR_MESSAGES from '../errors/errorMessages';
 
@@ -20,41 +20,7 @@ router.get('/users/:id', celebrate({
       }),
   }),
 }), getUserById);
-router.post('/users', celebrate({
-  body: Joi.object().keys({
-    name: Joi.string()
-      .required()
-      .min(2)
-      .max(30)
-      .messages({
-        'string.base': `${ERROR_MESSAGES.USER_INCORRECT_DATA}: поле name должно быть строкой`,
-        'string.empty': `${ERROR_MESSAGES.USER_INCORRECT_DATA}: поле name не должно быть пустым`,
-        'string.min': `${ERROR_MESSAGES.USER_INCORRECT_DATA}: поле name должно быть не меньше {#limit} символов`,
-        'string.max': `${ERROR_MESSAGES.USER_INCORRECT_DATA}: поле name должно быть не больше {#limit} символов`,
-        'any.required': `${ERROR_MESSAGES.USER_INCORRECT_DATA}: пропущено обязательное поле name`,
-      }),
-    about: Joi.string()
-      .required()
-      .min(2)
-      .max(30)
-      .messages({
-        'string.base': `${ERROR_MESSAGES.USER_INCORRECT_DATA}: поле about должно быть строкой`,
-        'string.empty': `${ERROR_MESSAGES.USER_INCORRECT_DATA}: поле about не должно быть пустым`,
-        'string.min': `${ERROR_MESSAGES.USER_INCORRECT_DATA}: поле about должно быть не меньше {#limit} символов`,
-        'string.max': `${ERROR_MESSAGES.USER_INCORRECT_DATA}: поле about должно быть не больше {#limit} символов`,
-        'any.required': `${ERROR_MESSAGES.USER_INCORRECT_DATA}: пропущено обязательное поле about`,
-      }),
-    avatar: Joi.string()
-      .required()
-      .uri()
-      .messages({
-        'string.base': `${ERROR_MESSAGES.USER_INCORRECT_DATA}: поле avatar должно быть строкой`,
-        'string.empty': `${ERROR_MESSAGES.USER_INCORRECT_DATA}: поле avatar не должно быть пустым`,
-        'string.uri': `${ERROR_MESSAGES.USER_INCORRECT_DATA}: поле avatar должно быть в формате url`,
-        'any.required': `${ERROR_MESSAGES.USER_INCORRECT_DATA}: пропущено обязательное поле avatar`,
-      }),
-  }),
-}), createUser);
+router.get('/users/me', getUserInfo);
 router.patch('/users/me', celebrate({
   body: Joi.object().keys({
     name: Joi.string()
