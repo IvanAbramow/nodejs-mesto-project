@@ -2,6 +2,7 @@ import { NextFunction, Request, Response } from 'express';
 import bcrypt from 'bcryptjs';
 import jwt, { JwtPayload } from 'jsonwebtoken';
 
+import { Error } from 'mongoose';
 import User from '../models/user';
 import { TAuthenticatedRequest } from '../types';
 import CustomError from '../errors/customError';
@@ -21,13 +22,9 @@ export const getUserById = async (req: Request, res: Response, next: NextFunctio
   const { id } = req.params;
 
   try {
-    const user = await User.findById(id);
-
-    if (!user) {
-      next(new CustomError(404, ERROR_MESSAGES.USER_NOT_FOUND));
-    } else {
-      res.json(user);
-    }
+    const user = await User.findById(id)
+      .orFail(new CustomError(404, ERROR_MESSAGES.USER_NOT_FOUND));
+    res.json(user);
   } catch (error) {
     next(error);
   }
@@ -44,16 +41,11 @@ export const createUser = async (req: Request, res: Response, next: NextFunction
       name, about, avatar, email, password: passwordHash,
     });
 
-    res.status(201).json({
-      name: newUser.name,
-      about: newUser.about,
-      avatar: newUser.avatar,
-      email: newUser.email,
-    });
+    res.status(201).json(newUser);
   } catch (error) {
     if (error instanceof Error && 'code' in error && error.code === 11000) {
       next(new CustomError(409, ERROR_MESSAGES.USER_EMAIL_ALREADY_EXISTS));
-    } else if (error instanceof Error) {
+    } else if (error instanceof Error.ValidationError) {
       next(new CustomError(400, ERROR_MESSAGES.USER_INCORRECT_DATA));
     } else {
       next(error);
@@ -70,12 +62,8 @@ export const userInfo = async (
     const userParams = req.user as JwtPayload;
     const userId = userParams?._id;
 
-    const user = await User.findById(userId);
-    if (!user) {
-      next(new CustomError(404, ERROR_MESSAGES.USER_NOT_FOUND));
-    } else {
-      res.json(user);
-    }
+    const user = await User.findById(userId).orFail(new CustomError(404, ERROR_MESSAGES.USER_NOT_FOUND));
+    res.json(user);
   } catch (error) {
     next(error);
   }
@@ -96,15 +84,11 @@ export const updateUserInfo = async (
       userId,
       { name, about, avatar },
       { new: true, runValidators: true },
-    );
+    ).orFail(new CustomError(404, ERROR_MESSAGES.USER_NOT_FOUND));
 
-    if (!updatedUser) {
-      next(new CustomError(404, ERROR_MESSAGES.USER_NOT_FOUND));
-    } else {
-      res.json(updatedUser);
-    }
+    res.json(updatedUser);
   } catch (error) {
-    if (error instanceof Error && error.name === 'ValidationError') {
+    if (error instanceof Error.ValidationError) {
       next(new CustomError(400, ERROR_MESSAGES.AVATAR_INCORRECT_DATA));
     } else {
       next(error);
@@ -127,15 +111,11 @@ export const updateUserAvatar = async (
       userId,
       { avatar },
       { new: true, runValidators: true },
-    );
+    ).orFail(new CustomError(404, ERROR_MESSAGES.USER_NOT_FOUND));
 
-    if (!updatedUser) {
-      next(new CustomError(404, ERROR_MESSAGES.USER_NOT_FOUND));
-    } else {
-      res.json(updatedUser);
-    }
+    res.json(updatedUser);
   } catch (error) {
-    if (error instanceof Error && error.name === 'ValidationError') {
+    if (error instanceof Error.ValidationError) {
       next(new CustomError(400, ERROR_MESSAGES.AVATAR_INCORRECT_DATA));
     } else {
       next(error);

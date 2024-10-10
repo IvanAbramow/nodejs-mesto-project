@@ -1,5 +1,6 @@
 import { NextFunction, Response } from 'express';
 import { JwtPayload } from 'jsonwebtoken';
+import { Error } from 'mongoose';
 import Card from '../models/card';
 import { TAuthenticatedRequest } from '../types';
 import CustomError from '../errors/customError';
@@ -95,15 +96,11 @@ export const likeCard = async (
       id,
       { $addToSet: { likes: userId } },
       { new: true },
-    );
+    ).orFail(new CustomError(404, ERROR_MESSAGES.CARD_NOT_FOUND));
 
-    if (!card) {
-      next(new CustomError(404, ERROR_MESSAGES.CARD_NOT_FOUND));
-    } else {
-      res.json(card);
-    }
+    res.json(card);
   } catch (error) {
-    if (error instanceof Error && error.name === 'ValidationError') {
+    if (error instanceof Error.ValidationError) {
       next(new CustomError(400, ERROR_MESSAGES.LIKE_CARD_INCORRECT_DATA));
     } else {
       next(error);
@@ -126,15 +123,11 @@ export const dislikeCard = async (
       id,
       { $pull: { likes: userId } },
       { new: true },
-    );
+    ).orFail(new CustomError(404, ERROR_MESSAGES.CARD_NOT_FOUND));
 
-    if (!card) {
-      next(new CustomError(404, ERROR_MESSAGES.CARD_NOT_FOUND));
-    } else {
-      res.json(card);
-    }
+    res.json(card);
   } catch (error) {
-    if (error instanceof Error && error.name === 'ValidationError') {
+    if (error instanceof Error.ValidationError) {
       next(new CustomError(400, ERROR_MESSAGES.DISLIKE_CARD_INCORRECT_DATA));
     } else {
       next(error);

@@ -16,8 +16,6 @@ import ERROR_MESSAGES from './errors/errorMessages';
 const { PORT = CONSTANTS.PORT } = process.env;
 const app = express();
 
-mongoose.connect(CONSTANTS.MONGO_URL);
-
 app.use(helmet());
 
 app.use(rateLimit({
@@ -47,6 +45,12 @@ app.use(errorLogger);
 
 app.use(errorHandler);
 
-app.listen(PORT, () => {
-  console.log('App is running on port', PORT);
-});
+const connect = async () => {
+  await mongoose.connect(CONSTANTS.MONGO_URL);
+  console.log('Connected to MongoDB');
+
+  app.listen(PORT);
+  console.log(`App listening on port ${PORT}`);
+};
+
+connect().catch((err) => console.error(`Error on server startup: ${err}`));

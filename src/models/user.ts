@@ -58,6 +58,16 @@ const userSchema = new mongoose.Schema<TUser, TUserModel>({
       },
     },
   },
+}, {
+  versionKey: false,
+  toJSON: {
+    virtuals: true,
+    transform: (doc, ret) => {
+      delete ret.password;
+      delete ret._id;
+      return ret;
+    },
+  },
 });
 
 userSchema.static('findUserByCredentials', async function findUserByCredentials(email: string, password: string) {
