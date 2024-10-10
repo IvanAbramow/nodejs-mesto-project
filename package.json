@@ -2,7 +2,7 @@
   "name": "nodejs-mesto-project",
   "author": "Ivan Abramov",
   "version": "1.0.0",
-  "description": "Yandex Practicum first sprint project part 1",
+  "description": "Yandex Practicum first sprint project",
   "main": "dist/index.js",
   "scripts": {
     "start": "ts-node src/app.ts",
