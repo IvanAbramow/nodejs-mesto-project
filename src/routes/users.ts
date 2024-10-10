@@ -47,6 +47,8 @@ router.patch('/users/me', celebrate({
         'string.max': `${ERROR_MESSAGES.USER_INCORRECT_DATA}: поле about должно быть не больше {#limit} символов`,
         'any.required': `${ERROR_MESSAGES.USER_INCORRECT_DATA}: пропущено обязательное поле about`,
       }),
+  }).unknown(false).messages({
+    'object.unknown': `${ERROR_MESSAGES.USER_INCORRECT_DATA}: поле {#label} не должно присутствовать`,
   }),
 }), updateUserInfo);
 router.patch('/users/me/avatar', celebrate({
@@ -60,6 +62,8 @@ router.patch('/users/me/avatar', celebrate({
         'string.pattern.base': `${ERROR_MESSAGES.USER_INCORRECT_DATA}: поле avatar должно быть в формате url`,
         'any.required': `${ERROR_MESSAGES.USER_INCORRECT_DATA}: пропущено обязательное поле avatar`,
       }),
+  }).unknown(false).messages({
+    'object.unknown': `${ERROR_MESSAGES.USER_INCORRECT_DATA}: поле {#label} не должно присутствовать`,
   }),
 }), updateUserAvatar);
 

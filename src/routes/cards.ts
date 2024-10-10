@@ -32,6 +32,8 @@ router.post('/cards', celebrate({
         'string.uri': `${ERROR_MESSAGES.CARD_INCORRECT_DATA}: поле link должно быть в формате url`,
         'any.required': `${ERROR_MESSAGES.CARD_INCORRECT_DATA}: пропущено обязательное поле link`,
       }),
+  }).unknown(false).messages({
+    'object.unknown': `${ERROR_MESSAGES.CARD_INCORRECT_DATA}: поле {#label} не должно присутствовать`,
   }),
 }), addCard);
 

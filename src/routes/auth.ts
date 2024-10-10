@@ -25,6 +25,8 @@ router.post(
           'string.empty': `${ERROR_MESSAGES.USER_INCORRECT_DATA}: поле password не должно быть пустым`,
           'any.required': `${ERROR_MESSAGES.USER_INCORRECT_DATA}: пропущено обязательное поле password`,
         }),
+    }).unknown(false).messages({
+      'object.unknown': `${ERROR_MESSAGES.USER_INCORRECT_DATA}: поле {#label} не должно присутствовать`,
     }),
   }),
   login,
@@ -74,6 +76,8 @@ router.post(
           'string.empty': `${ERROR_MESSAGES.USER_INCORRECT_DATA}: поле avatar не должно быть пустым`,
           'string.uri': `${ERROR_MESSAGES.USER_INCORRECT_DATA}: поле avatar должно быть в формате url`,
         }),
+    }).unknown(false).messages({
+      'object.unknown': `${ERROR_MESSAGES.USER_INCORRECT_DATA}: поле {#label} не должно присутствовать`,
     }),
   }),
   createUser,
