@@ -63,12 +63,12 @@ const userSchema = new mongoose.Schema<TUser, TUserModel>({
 userSchema.static('findUserByCredentials', async function findUserByCredentials(email: string, password: string) {
   const user = await this.findOne({ email }).select('+password');
   if (!user) {
-    return new CustomError(401, ERROR_MESSAGES.INCORRECT_AUTHORIZATION_DATA);
+    throw new CustomError(401, ERROR_MESSAGES.INCORRECT_AUTHORIZATION_DATA);
   }
 
   const matched = await bcrypt.compare(password, user.password);
   if (!matched) {
-    return new CustomError(401, ERROR_MESSAGES.INCORRECT_AUTHORIZATION_DATA);
+    throw new CustomError(401, ERROR_MESSAGES.INCORRECT_AUTHORIZATION_DATA);
   }
 
   return user;

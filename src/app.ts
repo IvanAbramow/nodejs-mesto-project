@@ -1,6 +1,8 @@
 import express from 'express';
 import mongoose from 'mongoose';
 import cookieParser from 'cookie-parser';
+import { rateLimit } from 'express-rate-limit';
+import helmet from 'helmet';
 import authRouter from './routes/auth';
 import usersRouter from './routes/users';
 import cardsRouter from './routes/cards';
@@ -15,6 +17,15 @@ const { PORT = CONSTANTS.PORT } = process.env;
 const app = express();
 
 mongoose.connect(CONSTANTS.MONGO_URL);
+
+app.use(helmet());
+
+app.use(rateLimit({
+  windowMs: 15 * 60 * 1000,
+  limit: 100,
+  standardHeaders: 'draft-7',
+  legacyHeaders: false,
+}));
 
 app.use(express.json());
 app.use(cookieParser());

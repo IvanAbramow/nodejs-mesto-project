@@ -5,6 +5,8 @@ import {
 } from '../controllers/cards';
 import ERROR_MESSAGES from '../errors/errorMessages';
 
+const urlPattern = /^(https?:\/\/)(www\.)?[\w\-._~:/?#[\]@!$&'()*+,;=]+\.[a-z]{2,}(\/[\w\-._~:/?#[\]@!$&'()*+,;=]*)*\/?#?$/i;
+
 const router = Router();
 
 router.get('/cards', getCards);
@@ -23,6 +25,7 @@ router.post('/cards', celebrate({
       }),
     link: Joi.string()
       .required()
+      .pattern(urlPattern)
       .messages({
         'string.base': `${ERROR_MESSAGES.CARD_INCORRECT_DATA}: поле link должно быть строкой`,
         'string.empty': `${ERROR_MESSAGES.CARD_INCORRECT_DATA}: поле link не должно быть пустым`,
