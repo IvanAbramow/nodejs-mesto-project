@@ -45,11 +45,13 @@ export const createUser = async (req: Request, res: Response, next: NextFunction
     });
 
     res.status(201).json(newUser);
-  } catch (err: any) {
-    if (err.code === 11000) {
+  } catch (error) {
+    if (error instanceof Error && 'code' in error && error.code === 11000) {
       next(new CustomError(409, ERROR_MESSAGES.USER_EMAIL_ALREADY_EXISTS));
-    } else {
+    } else if (error instanceof Error) {
       next(new CustomError(400, ERROR_MESSAGES.USER_INCORRECT_DATA));
+    } else {
+      next(error);
     }
   }
 };
@@ -96,7 +98,7 @@ export const updateUserInfo = async (
     } else {
       res.json(updatedUser);
     }
-  } catch (error: unknown) {
+  } catch (error) {
     if (error instanceof Error && error.name === 'ValidationError') {
       next(new CustomError(400, ERROR_MESSAGES.AVATAR_INCORRECT_DATA));
     } else {
