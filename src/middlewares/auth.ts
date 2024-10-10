@@ -6,17 +6,15 @@ import CustomError from '../errors/customError';
 import CONSTANTS from '../constants';
 
 export default (req: TAuthenticatedRequest, res: Response, next: NextFunction) => {
-  const { authorization } = req.headers;
+  const { authorization } = req.cookies;
 
-  if (!authorization || !authorization.startsWith('Bearer ')) {
+  if (!authorization) {
     next(new CustomError(401, ERROR_MESSAGES.AUTHORIZATION_REQUIRED));
     return;
   }
 
-  const token = authorization.replace('Bearer ', '');
-
   try {
-    req.user = jwt.verify(token, CONSTANTS.SECRET_KEY);
+    req.user = jwt.verify(authorization, CONSTANTS.SECRET_KEY);
     next();
   } catch (err) {
     next(new CustomError(401, ERROR_MESSAGES.AUTHORIZATION_REQUIRED));

@@ -51,6 +51,7 @@ export const addCard = async (
   }
 };
 
+// eslint-disable-next-line consistent-return
 export const deleteCard = async (req: TAuthenticatedRequest, res: Response, next: NextFunction) => {
   const { id } = req.params;
 
@@ -60,20 +61,20 @@ export const deleteCard = async (req: TAuthenticatedRequest, res: Response, next
 
     const card = await Card.findById(id);
     if (!card) {
-      next(new CustomError(404, ERROR_MESSAGES.CARD_NOT_FOUND));
+      return next(new CustomError(404, ERROR_MESSAGES.CARD_NOT_FOUND));
     }
 
-    if (card && card.owner.toString() !== userId) {
-      next(new CustomError(403, ERROR_MESSAGES.USER_NOT_PERMITTED_TO_DELETE_CARD));
+    if (card.owner.toString() !== userId) {
+      return next(new CustomError(403, ERROR_MESSAGES.USER_NOT_PERMITTED_TO_DELETE_CARD));
     }
 
     const deletedCard = await Card.findByIdAndDelete(id);
 
     if (!deletedCard) {
-      next(new CustomError(404, ERROR_MESSAGES.CARD_NOT_FOUND));
-    } else {
-      res.send({ message: 'Карточка удалена' });
+      return next(new CustomError(404, ERROR_MESSAGES.CARD_NOT_FOUND));
     }
+
+    res.send({ message: 'Карточка удалена' });
   } catch (error) {
     next(error);
   }

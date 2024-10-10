@@ -11,6 +11,7 @@ const ERROR_MESSAGES = {
   AUTHORIZATION_REQUIRED: 'Необходима авторизация',
   INCORRECT_AUTHORIZATION_DATA: 'Передан неверная почта или пароль',
   INTERNAL_SERVER_ERROR: 'Ошибка сервера',
+  NOT_FOUND: 'Ресурс не найден',
 };
 
 export default ERROR_MESSAGES;

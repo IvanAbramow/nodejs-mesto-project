@@ -44,7 +44,12 @@ export const createUser = async (req: Request, res: Response, next: NextFunction
       name, about, avatar, email, password: passwordHash,
     });
 
-    res.status(201).json(newUser);
+    res.status(201).json({
+      name: newUser.name,
+      about: newUser.about,
+      avatar: newUser.avatar,
+      email: newUser.email,
+    });
   } catch (error) {
     if (error instanceof Error && 'code' in error && error.code === 11000) {
       next(new CustomError(409, ERROR_MESSAGES.USER_EMAIL_ALREADY_EXISTS));
@@ -121,7 +126,7 @@ export const updateUserAvatar = async (
     const updatedUser = await User.findByIdAndUpdate(
       userId,
       { avatar },
-      { new: true },
+      { new: true, runValidators: true },
     );
 
     if (!updatedUser) {
@@ -151,10 +156,6 @@ export const login = async (req: Request, res: Response, next: NextFunction) => 
       sameSite: true,
     }).send({ message: 'Успешная авторизация' });
   } catch (error) {
-    if (error instanceof Error && error.name === 'ValidationError') {
-      next(new CustomError(400, ERROR_MESSAGES.INCORRECT_AUTHORIZATION_DATA));
-    } else {
-      next(new CustomError(401, ERROR_MESSAGES.AUTHORIZATION_REQUIRED));
-    }
+    next(error);
   }
 };
