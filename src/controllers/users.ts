@@ -6,7 +6,7 @@ import User from '../models/user';
 import { TAuthenticatedRequest } from '../types';
 import CustomError from '../errors/customError';
 import ERROR_MESSAGES from '../errors/errorMessages';
-import SECRET_KEY from '../constants';
+import CONSTANTS from '../constants';
 
 export const getUsers = async (req: Request, res: Response, next: NextFunction) => {
   try {
@@ -143,7 +143,7 @@ export const login = async (req: Request, res: Response, next: NextFunction) => 
 
   try {
     const user = await User.findUserByCredentials(email, password);
-    const token = jwt.sign({ _id: user._id }, SECRET_KEY, { expiresIn: '7d' });
+    const token = jwt.sign({ _id: user._id }, CONSTANTS.SECRET_KEY, { expiresIn: '7d' });
 
     res.cookie('authorization', token, {
       maxAge: 604800000,

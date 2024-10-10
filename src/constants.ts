@@ -1,3 +1,7 @@
-const SECRET_KEY = 'super-strong-secret';
+const CONSTANTS = {
+  SECRET_KEY: 'super-strong-secret',
+  MONGO_URL: 'mongodb://localhost:27017/mestodb',
+  PORT: 3000,
+};
 
-export default SECRET_KEY;
+export default CONSTANTS;
